@@ -1,0 +1,15 @@
+{
+  "type": "event",
+  "event_type": "file.save",
+  "payload": {
+    "path": "/repo/file.py",
+    "user": {
+      "id": "alice"
+    }
+  },
+  "meta": {
+    "auth": "token1",
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "timestamp": "2026-01-06T12:00:00Z"
+  }
+}

@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  mcp-stdio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mcp-webhook-stdio:latest
+    container_name: mcp-webhook-server
+
+    # Environment variables - will be loaded from .env
+    environment:
+      - PORT=${PORT:-9000}
+      - MCP_NAME=${MCP_NAME:-MCP-STDIO-Server}
+      - WEBHOOK_BEARER_TOKENS=${WEBHOOK_BEARER_TOKENS:-}
+      - ASYNC_PROCESSING=${ASYNC_PROCESSING:-false}
+      - MAPPING_FILE=/app/config/mapping.yml
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+
+    # Port mapping for stdio-proxy
+    ports:
+      - "${PORT:-9000}:${PORT:-9000}"
+
+    # Mount config directory
+    volumes:
+      - ./config:/app/config:ro
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost', 9000)); s.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Optional Redis service for async queue (use with --profile async)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: mcp-webhook-redis
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 3
+
+# Profiles for optional services
+# profiles:
+#   async:
+#     services:
+#       - redis
+
+# NOTE: This is a stub. Uncomment and complete sections as implementation progresses.
