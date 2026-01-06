@@ -4,7 +4,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 001 — Repository scaffold
+- [x] Task 001 — Repository scaffold
   - Scope reminder: Create repository layout and basic files so later implementation has a consistent structure.
   - Build steps:
     1. Create directories: `src/`, `config/`, `docker/`, `examples/`, `tests/`.
@@ -17,7 +17,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 002 — Planning.md and Task.md committed
+- [x] Task 002 — Planning.md and Task.md committed
   - Scope reminder: Ensure planning artifacts are in repo root for traceability.
   - Build steps:
     1. Add `Planning.md` (already present) and this `Task.md` to repo root.
@@ -27,7 +27,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 010 — Implement config module
+- [x] Task 010 — Implement config module
   - Scope reminder: Centralize configuration (env-driven) for PORT, tokens, mapping path, async toggle, log level.
   - Build steps:
     1. Add `src/mcp_webhook/config.py` using `pydantic.BaseSettings`.
@@ -39,7 +39,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 020 — Add mapping config parser
+- [x] Task 020 — Add mapping config parser
   - Scope reminder: Parse mapping YAML/JSON to resolve event -> tool and arg templates.
   - Build steps:
     1. Implement `src/mcp_webhook/mapping.py` that reads `MAPPING_FILE`.
