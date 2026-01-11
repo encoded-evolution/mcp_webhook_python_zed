@@ -69,6 +69,9 @@ venv.bak/
 *.log
 logs/
 
+# Temporary/accidental files (e.g., from pip redirects)
+=*
+
 # Docker
 docker/.env.local
 
