@@ -50,7 +50,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 030 — Envelope Pydantic models and extraction utilities
+- [x] Task 030 — Envelope Pydantic models and extraction utilities
   - Scope reminder: Validate incoming envelopes and extract args using dot-path syntax.
   - Build steps:
     1. Implement `src/mcp_webhook/envelope.py` with Pydantic models for `Envelope`, `Meta`.
@@ -61,7 +61,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 040 — Implement MCP tools (ack_event, process_payload, admin list)
+- [x] Task 040 — Implement MCP tools (ack_event, process_payload, admin list)
   - Scope reminder: Provide the core tool functions that mapping will call; structured outputs via Pydantic.
   - Build steps:
     1. Create `src/mcp_webhook/tools.py`.
@@ -73,7 +73,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 050 — Implement Envelope Router (sync path)
+- [x] Task 050 — Implement Envelope Router (sync path)
   - Scope reminder: Route validated envelopes to an MCP tool invocation synchronously (no queue).
   - Build steps:
     1. Add `src/mcp_webhook/router.py`.
@@ -85,7 +85,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 060 — Implement in-process async worker (optional toggle)
+- [x] Task 060 — Implement in-process async worker (optional toggle)
   - Scope reminder: Support asynchronous processing when `ASYNC_PROCESSING=true`; in-process queue small worker pool.
   - Build steps:
     1. Add `src/mcp_webhook/worker.py` implementing a simple asyncio queue and worker coroutine(s).
@@ -95,7 +95,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 070 — Implement FastMCP STDIO server bootstrap
+- [x] Task 070 — Implement FastMCP STDIO server bootstrap
   - Scope reminder: Launch FastMCP server and register tools so server speaks MCP on STDIO.
   - Build steps:
     1. Create `src/mcp_webhook/server.py` which constructs `FastMCP` with name, registers `@mcp.tool()` wrappers around `tools.py` functions, and exposes an entrypoint `run_stdio_server()` that calls `mcp.run(transport="stdio")`.
@@ -105,7 +105,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 080 — Implement stdio-proxy (TCP <-> STDIO bridge)
+- [x] Task 080 — Implement stdio-proxy (TCP <-> STDIO bridge)
   - Scope reminder: Provide TCP endpoint for host clients; proxy forwards bytes to server stdin/stdout.
   - Build steps:
     1. Add `src/mcp_webhook/proxy.py` implementing an asyncio TCP server.
@@ -117,7 +117,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 090 — Entry point and Docker entrypoint script
+- [x] Task 090 — Entry point and Docker entrypoint script
   - Scope reminder: Tie startup: config load, start server subprocess and proxy; support env-driven behavior.
   - Build steps:
     1. Add `entrypoint.sh` (or `entrypoint.py`) to start proxy and spawn server subprocess; handle signals.
@@ -129,7 +129,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 100 — Dockerfile and docker-compose
+- [x] Task 100 — Dockerfile and docker-compose
   - Scope reminder: Produce a small image and a `docker-compose.yml` enabling 1-click run with example volume mounts.
   - Build steps:
     1. Implement `Dockerfile` using `python:3.11-slim`, install required dependencies via `pyproject.toml` or `requirements.txt`.
@@ -141,7 +141,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 110 — Logging, metrics stub, and recent events buffer
+- [x] Task 110 — Logging, metrics stub, and recent events buffer
   - Scope reminder: Basic observability for debugging and tests.
   - Build steps:
     1. Implement structured JSON logging via `logging` config in `config.py`.
@@ -153,7 +153,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 120 — Unit tests for all modules
+- [x] Task 120 — Unit tests for all modules
   - Scope reminder: Provide tests for config, mapping, envelope parsing, extraction, tools, and router.
   - Build steps:
     1. Create `tests/unit/test_config.py`, `test_mapping.py`, `test_envelope.py`, `test_extraction.py`, `test_tools.py`, `test_router.py`.
@@ -163,7 +163,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 130 — Integration tests (local TCP + stdio)
+- [x] Task 130 — Integration tests (local TCP + stdio)
   - Scope reminder: Validate end-to-end behavior via proxy: client -> TCP -> proxy -> server -> tool -> response.
   - Build steps:
     1. Add `tests/integration/test_stdio_proxy.py` that starts container or in-process proxy+server and connects an asyncio TCP client.
@@ -173,7 +173,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 140 — CI workflow
+- [x] Task 140 — CI workflow
   - Scope reminder: Automate lint, unit tests, build image, and integration smoke test.
   - Build steps:
     1. Add `.github/workflows/ci.yml` with jobs: setup, lint, test, build (optional), integration smoke.
