@@ -200,6 +200,12 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
     2. Implement queue integration in `worker.py` if enabled (use `aioredis` or simple `asyncio`-Redis pattern).
   - Test to mark complete:
     - Bring up compose with profile; enqueue tasks from client; worker consumes and processes jobs; assert results.
+  - Follow-up actions:
+    1. Mark task complete in Task.md.
+    2. Create a summary of changes made during this task.
+    3. Commit all changes to Git with descriptive commit message.
+    4. Push to origin/main.
+    5. Wait for user review before proceeding to next task.
 
 ---
 
@@ -211,6 +217,12 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
     3. Tag a repo release or create a release draft.
   - Test to mark complete:
     - All tests pass; release notes present and the image build steps documented.
+  - Follow-up actions:
+    1. Mark task complete in Task.md.
+    2. Create a summary of changes made during this task.
+    3. Commit all changes to Git with descriptive commit message.
+    4. Push to origin/main.
+    5. Wait for user review before proceeding to next task.
 
 ---
 
