@@ -24,6 +24,7 @@ from mcp_webhook.tools import (
     ProcessPayloadResponse,
     ListRecentEventsResponse,
 )
+from mcp_webhook.router import envelope_router
 
 
 # Configure structured JSON logging
@@ -91,7 +92,7 @@ async def ack_event_tool(
     """
     logger.info(f"Acknowledging event: {event_type}", extra={"event_type": event_type})
     increment_metric("ack_event_tool", "success")
-    
+
     result = ack_event(event_type=event_type, payload=payload)
     return result.model_dump()
 
@@ -119,7 +120,7 @@ async def process_payload_tool(
         extra={"user_id": user_id, "path": path}
     )
     increment_metric("process_payload_tool", "success")
-    
+
     result = process_payload(path=path, user_id=user_id)
     return result.model_dump()
 
@@ -141,7 +142,7 @@ async def list_recent_events_tool(
     """
     logger.info(f"Listing recent events (max_count={max_count})")
     increment_metric("list_recent_events_tool", "success")
-    
+
     result = list_recent_events(max_count=max_count)
     return result.model_dump()
 
@@ -157,9 +158,9 @@ async def get_server_info() -> dict[str, Any]:
         A structured response with server information
     """
     settings = get_settings()
-    
+
     logger.info("Server info requested")
-    
+
     info = {
         "name": settings.mcp_name,
         "port": settings.port,
@@ -169,7 +170,7 @@ async def get_server_info() -> dict[str, Any]:
         "mapping_file": settings.mapping_file,
         "metrics": get_metrics(),
     }
-    
+
     return info
 
 
@@ -184,9 +185,47 @@ async def get_metrics_tool() -> dict[str, Any]:
         A structured response with current metrics
     """
     logger.info("Metrics requested")
-    
+
     metrics = get_metrics()
     return metrics
+
+
+@mcp.tool()
+async def envelope_router_tool(
+    envelope: dict[str, Any],
+) -> dict[str, Any]:
+    """Route an event envelope to the appropriate MCP tool.
+
+    This tool accepts an event envelope, validates it, and routes it
+    to the appropriate tool based on the event type mapping configuration.
+
+    Args:
+        envelope: Dictionary containing envelope data with structure:
+            {
+                "type": "event",
+                "event_type": str,
+                "payload": dict,
+                "meta": {
+                    "auth": str (optional),
+                    "id": str (optional),
+                    "timestamp": str (optional)
+                }
+            }
+
+    Returns:
+        Dictionary with routing result:
+            {
+                "success": bool,
+                "tool": str | None,
+                "result": dict | None,
+                "error": str | None
+            }
+    """
+    logger.info(f"Routing envelope: {envelope.get('event_type', 'unknown')}")
+    increment_metric("envelope_router_tool", "success")
+
+    result = envelope_router(envelope)
+    return result
 
 
 @mcp.tool()
@@ -201,7 +240,7 @@ async def reset_metrics_tool() -> dict[str, Any]:
     """
     logger.info("Resetting metrics")
     reset_metrics()
-    
+
     return {
         "success": True,
         "message": "Metrics have been reset",
@@ -222,7 +261,7 @@ def run_stdio_server() -> None:
     - Collect basic metrics
     """
     settings = get_settings()
-    
+
     logger.info(f"Starting MCP STDIO server: {settings.mcp_name}")
     logger.info(f"Auth enabled: {settings.auth_enabled}")
     logger.info(f"Async processing: {settings.async_processing}")

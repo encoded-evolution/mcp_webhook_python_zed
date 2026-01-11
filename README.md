@@ -21,12 +21,16 @@ This project provides a robust MCP server that:
 - ✅ JSON structured logging
 - ✅ Example tools: `ack_event`, `process_payload`, `list_recent_events`
 
-### Planned Features
-- 🔜 In-memory recent event log
-- 🔜 In-process worker pool for async jobs
-- 🔜 Optional Redis-backed queue
-- 🔜 Example stdio client script
-- 🔜 Prometheus metrics stub
+### Additional Features (Implemented)
+- ✅ In-memory recent event log (via `list_recent_events` tool)
+- ✅ In-process worker pool for async jobs (configurable via `ASYNC_PROCESSING`)
+- ✅ Comprehensive testing (unit + integration)
+- ✅ CI/CD pipeline with GitHub Actions
+
+### Optional/Future Features
+- 🔜 Redis-backed queue for high-throughput scenarios
+- 🔜 Example stdio client script (see Task 150)
+- 🔜 Prometheus metrics integration
 
 ## Quick Start
 
@@ -66,12 +70,19 @@ The server will be available at `tcp://localhost:9000` (default port).
 
 ### Testing the Connection
 
-Send a test envelope using netcat (for basic TCP testing):
+**Quick TCP Test (netcat)**
+Send a test envelope using netcat (for basic connectivity testing):
 ```bash
 printf '%s\n' '{"type":"event","event_type":"file.save","payload":{"path":"/repo/file.py"},"meta":{"auth":"token1"}}' | nc localhost 9000
 ```
 
-Note: This is a simple TCP test. Full MCP stdio framing is required for production usage.
+**Using the Example Client**
+For proper MCP stdio framing, use the example client:
+```bash
+python examples/stdio_client.py --event file.save --path /repo/file.py --auth token1
+```
+
+**Note**: The netcat test is for basic TCP connectivity only. Full MCP stdio framing is required for production usage. See `examples/stdio_client.py` for a complete client implementation.
 
 ## Configuration
 

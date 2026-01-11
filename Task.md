@@ -183,7 +183,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 150 — Documentation & examples
+- [x] Task 150 — Documentation & examples
   - Scope reminder: Provide README quickstart, example client, and mapping examples so users can run the system.
   - Build steps:
     1. Enhance `README.md` with quickstart steps: `docker-compose up --build`, sample envelope, and sample client command.

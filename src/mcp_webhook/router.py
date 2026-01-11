@@ -396,3 +396,54 @@ def route_envelope_with_dict(
 
     # Route the validated envelope
     return route_envelope(envelope, mapping_config)
+
+
+def envelope_router(envelope: Dict[str, Any]) -> Dict[str, Any]:
+    """MCP tool for routing event envelopes to mapped tools.
+
+    This function is designed to be called directly as an MCP tool.
+    It accepts an envelope dictionary, validates it, and routes it
+    to the appropriate tool based on the event type mapping.
+
+    Args:
+        envelope: Dictionary containing envelope data with structure:
+            {
+                "type": "event",
+                "event_type": str,
+                "payload": dict,
+                "meta": {
+                    "auth": str (optional),
+                    "id": str (optional),
+                    "timestamp": str (optional)
+                }
+            }
+
+    Returns:
+        Dictionary with routing result:
+            {
+                "success": bool,
+                "tool": str | None,
+                "result": dict | None,
+                "error": str | None
+            }
+
+    Examples:
+        >>> result = envelope_router({
+        ...     "type": "event",
+        ...     "event_type": "file.save",
+        ...     "payload": {"path": "/repo/file.py", "user": {"id": "alice"}},
+        ...     "meta": {"auth": "token123"}
+        ... })
+        >>> result["success"]
+        True
+        >>> result["tool"]
+        'process_payload'
+    """
+    response = route_envelope_with_dict(envelope)
+
+    return {
+        "success": response.success,
+        "tool": response.tool,
+        "result": response.result,
+        "error": response.error,
+    }
