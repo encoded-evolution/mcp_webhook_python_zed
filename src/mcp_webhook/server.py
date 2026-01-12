@@ -260,16 +260,24 @@ def run_stdio_server() -> None:
     - Log using structured JSON format
     - Collect basic metrics
     """
+    logger.info("=" * 60)
+    logger.info("MCP STDIO Server initializing...")
+    logger.info("=" * 60)
+
     settings = get_settings()
 
     logger.info(f"Starting MCP STDIO server: {settings.mcp_name}")
     logger.info(f"Auth enabled: {settings.auth_enabled}")
     logger.info(f"Async processing: {settings.async_processing}")
+    logger.info(f"Port: {settings.port}")
+    logger.info(f"Mapping file: {settings.mapping_file}")
 
     try:
+        logger.info("Starting FastMCP server loop (blocking on STDIO)...")
         mcp.run()
+        logger.info("FastMCP server loop exited normally")
     except KeyboardInterrupt:
-        logger.info("Server shutdown requested")
+        logger.info("Server shutdown requested via KeyboardInterrupt")
         increment_metric("server", "shutdown")
     except Exception as e:
         logger.error(f"Server error: {e}", exc_info=True)
@@ -287,4 +295,10 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    logger.info("Server process starting (as subprocess)...")
+    try:
+        main()
+        logger.info("Server process completed")
+    except Exception as e:
+        logger.error(f"Server process crashed: {e}", exc_info=True)
+        raise

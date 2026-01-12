@@ -55,15 +55,23 @@ class StdioProxy:
             close_writer: Whether to close the writer on EOF/disconnect. Defaults to True.
                           Set to False for server stdin to keep process alive.
         """
+        bytes_total = 0
         try:
             while not self.shutdown_event.is_set():
                 data = await reader.read(4096)
                 if not data:
-                    self._logger.debug(f"{name}: Connection closed (EOF)")
+                    self._logger.info(f"{name}: Connection closed (EOF) after {bytes_total} bytes")
                     break
+
+                # Log first chunk of data for diagnostics
+                if bytes_total == 0:
+                    preview = data[:200].decode('utf-8', errors='replace')
+                    self._logger.info(f"{name}: First {len(data)} bytes received: {repr(preview)}")
+
                 writer.write(data)
                 await writer.drain()
-                self._logger.debug(f"{name}: Forwarded {len(data)} bytes")
+                bytes_total += len(data)
+                self._logger.debug(f"{name}: Forwarded {len(data)} bytes (total: {bytes_total})")
         except asyncio.CancelledError:
             self._logger.debug(f"{name}: Forward cancelled")
         except ConnectionResetError:
@@ -98,6 +106,7 @@ class StdioProxy:
         try:
             # Ensure server process is running
             if self.server_process is None or self.server_process.returncode is not None:
+                self._logger.info(f"Server process not running, starting...")
                 await self.start_server_process()
 
             if self.server_process is None or self.server_process.returncode is not None:
@@ -112,6 +121,8 @@ class StdioProxy:
                 client_writer.close()
                 await client_writer.wait_closed()
                 return
+
+            self._logger.info(f"Server process ready (PID: {self.server_process.pid}), starting bidirectional forwarding")
 
             # Set up bidirectional forwarding
             # Client -> Server stdin (IMPORTANT: close_writer=False to keep server alive!)
@@ -164,6 +175,7 @@ class StdioProxy:
 
         # Build command to start MCP server
         cmd = ["python", "-m", "mcp_webhook.server"]
+        self._logger.info(f"Server command: {' '.join(cmd)}")
 
         try:
             self.server_process = await asyncio.create_subprocess_exec(
