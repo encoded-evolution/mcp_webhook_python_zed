@@ -146,8 +146,46 @@ Add the following to your Claude Desktop configuration file (`claude_desktop_con
 ```
 
 ### VS Code MCP Extension Configuration
+### Claude Desktop Configuration
+
+Add to your Claude Desktop config file (`claude_desktop_config.json` on macOS/Linux or `claude_desktop_config.json` in `%APPDATA%\Claude\` on Windows):
+
+**Option 1: Using docker compose (recommended for multiple clients)**
+
+```json
+{
+  "mcpServers": {
+    "mcp-webhook": {
+      "transport": {
+        "type": "tcp",
+        "host": "localhost",
+        "port": 9000
+      }
+    }
+  }
+}
+```
+### VS Code MCP Extension Configuration
 
 Add to your VS Code settings (`settings.json`):
+
+**Option 1: Using docker compose (recommended for multiple clients)**
+
+```json
+{
+  "mcp.servers": {
+    "mcp-webhook": {
+      "transport": {
+        "type": "tcp",
+        "host": "localhost",
+        "port": 9000
+      }
+    }
+  }
+}
+```
+
+**Option 2: Using individual container (one client per container)**
 
 ```json
 {
@@ -159,9 +197,12 @@ Add to your VS Code settings (`settings.json`):
         "args": [
           "run", "--rm", "-i",
           "-e", "PORT=9000",
-          "-e", "WEBHOOK_BEARER_TOKENS=${WEBHOOK_BEARER_TOKENS}",
+          "-e", "MCP_NAME=My-Webhook-Server",
+          "-e", "WEBHOOK_BEARER_TOKENS=your-secret-token-1,another-token-2",
           "-e", "ASYNC_PROCESSING=false",
           "-e", "LOG_LEVEL=INFO",
+          "-e", "REDIS_URL=",
+          "-e", "MAPPING_FILE=/app/config/mapping.yml",
           "-v", "${env:HOME}/.config/mcp-webhook:/app/config:ro",
           "-p", "9000:9000",
           "encoded-evolution/mcp-webhook-stdio:latest"
@@ -172,9 +213,60 @@ Add to your VS Code settings (`settings.json`):
 }
 ```
 
-### TCP Transport (If Client Supports It)
+### Zed Configuration
 
-If your MCP client supports direct TCP connections (not just STDIO), you can connect directly to the TCP proxy:
+**Option 1: Using docker compose (recommended - server already running)**
+
+First, start the server:
+```bash
+cd mcp_webhook_python_zed
+docker compose up
+```
+
+Then configure Zed (open settings.json):
+
+```json
+{
+  "lsp": {
+    "mcp": {
+      "mcp-webhook": {
+        "transport": {
+          "type": "tcp",
+          "host": "localhost",
+          "port": 9000
+        }
+      }
+    }
+  }
+}
+```
+
+**Option 2: Using individual container (server starts with Zed)**
+
+Configure Zed (open settings.json):
+
+```json
+{
+  "lsp": {
+    "mcp": {
+      "mcp-webhook": {
+        "command": "docker",
+        "args": [
+          "run", "--rm", "-i",
+          "-p", "9000:9000",
+          "encoded-evolution/mcp-webhook-stdio:latest"
+        ]
+      }
+    }
+  }
+}
+```
+
+**Important:** Do not use Option 2 if you already have `docker compose up` running, as it will cause a port conflict on 9000.
+
+### TCP Transport (For Other Clients)
+
+If your MCP client supports direct TCP connections, you can connect directly to the TCP proxy:
 
 ```json
 {
@@ -183,10 +275,7 @@ If your MCP client supports direct TCP connections (not just STDIO), you can con
       "transport": {
         "type": "tcp",
         "host": "localhost",
-        "port": 9000,
-        "headers": {
-          "Authorization": "Bearer your-secret-token-1"
-        }
+        "port": 9000
       }
     }
   }
@@ -209,6 +298,8 @@ If your MCP client supports direct TCP connections (not just STDIO), you can con
 
 After configuring your MCP client:
 
+**If using docker compose:**
+
 1. Verify the container is running:
 ```bash
 docker ps | grep mcp-webhook
@@ -216,7 +307,7 @@ docker ps | grep mcp-webhook
 
 2. Check logs for startup:
 ```bash
-docker logs $(docker ps -q -f ancestor=mcp-webhook-stdio)
+docker logs mcp-webhook-server
 ```
 
 3. Test TCP connection (optional):
@@ -224,9 +315,34 @@ docker logs $(docker ps -q -f ancestor=mcp-webhook-stdio)
 nc -zv localhost 9000
 ```
 
-4. Restart your MCP client to load the new configuration
+4. Look for successful client connection in logs:
+```bash
+docker logs -f mcp-webhook-server
+```
+
+**If using individual container:**
+
+1. Start your MCP client (Zed, Claude Desktop, etc.)
+2. Client will automatically start the Docker container
+3. Check logs from container:
+```bash
+docker ps | grep mcp-webhook-stdio
+docker logs <container-id>
+```
+
+4. Restart your MCP client if you make configuration changes
 
 ### Common Issues
+
+#### Port Already in Use
+
+If using docker compose and seeing port conflicts, ensure you're not running multiple MCP clients configured for STDIO transport. Use TCP transport instead.
+
+#### Connection Refused
+
+Ensure the container is running before trying to connect with TCP transport. Check with `docker ps`.
+
+#### Authentication Failures
 
 **Container not starting:** Check Docker is running and the image is pulled correctly.
 
