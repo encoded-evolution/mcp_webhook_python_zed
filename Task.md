@@ -193,7 +193,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 160 — Optional: Redis-backed queue profile
+- [x] Task 160 — Optional: Redis-backed queue profile ✅
   - Scope reminder: Provide optional async queue for higher throughput; enabled via compose profile `async`.
   - Build steps:
     1. Add `docker-compose.yml` profile that includes `redis`.
@@ -232,21 +232,26 @@ Notes
 
 ---
 
-## Change History
+ ## Change History
 
-### Task.md Updates (Commit b6c9473 - 2026-01-06)
-**Changes Made:**
-- Amended Tasks 160 and 170 to include follow-up actions section
-- Reordered follow-up actions so "Mark task complete in Task.md" is step 1
-- Added ✅ to Task 150 for visual clarity of completion status
-
-**Rationale:**
-Establishing a consistent workflow for task completion where tasks are immediately marked complete before summaries, commits, and pushes. This ensures Task.md always reflects the current state of work and provides clear audit trail.
-
-**Follow-up Actions Pattern (for Tasks 160 & 170):**
-1. Mark task complete in Task.md
-2. Create a summary of changes made during this task
-3. Commit all changes to Git with descriptive commit message
-4. Push to origin/main
-5. Wait for user review before proceeding to next task
-
+-### Task.md Updates (Commit b6c9473 - 2026-01-06)
+-**Changes Made:**
+-- Amended Tasks 160 and 170 to include follow-up actions section
+-- Reordered follow-up actions so "Mark task complete in Task.md" is step 1
+-- Added ✅ to Task 150 for visual clarity of completion status
+-
+-**Rationale:**
+-Establishing a consistent workflow for task completion where tasks are immediately marked complete before summaries, commits, and pushes. This ensures Task.md always reflects the current state of work and provides clear audit trail.
+-
+-**Follow-up Actions Pattern (for Tasks 160 & 170):**
+-1. Mark task complete in Task.md
+-2. Create a summary of changes made during this task
+-3. Commit all changes to Git with descriptive commit message
+-4. Push to origin/main
+-5. Wait for user review before proceeding to next task
++### 2026-01-06 - Task.md Structure Updates
++- Amended Tasks 160 and 170 with follow-up actions pattern
++- Reordered follow-up actions to mark task complete first
++- Added visual ✅ to Task 150 completion status
++- Established consistent workflow: mark complete → summary → commit → push → review
++

@@ -82,7 +82,10 @@ async def test_worker_processes_single_task():
         await asyncio.sleep(0.5)
 
         # Verify queue is empty
-        assert worker.queue_size == 0
+        if worker._use_redis:
+            assert await worker.get_queue_size() == 0
+        else:
+            assert worker.queue_size == 0
 
     finally:
         await worker.stop()
@@ -127,7 +130,10 @@ async def test_worker_multiple_tasks_sequential():
         await asyncio.sleep(1.0)
 
         # Verify queue is empty
-        assert worker.queue_size == 0
+        if worker._use_redis:
+            assert await worker.get_queue_size() == 0
+        else:
+            assert worker.queue_size == 0
 
     finally:
         await worker.stop()
@@ -173,7 +179,10 @@ async def test_worker_multiple_workers_parallel():
         await asyncio.sleep(1.0)
 
         # Verify queue is empty
-        assert worker.queue_size == 0
+        if worker._use_redis:
+            assert await worker.get_queue_size() == 0
+        else:
+            assert worker.queue_size == 0
 
     finally:
         await worker.stop()
@@ -379,7 +388,10 @@ async def test_worker_error_handling():
         await asyncio.sleep(0.5)
 
         # Verify queue is empty (error was handled)
-        assert worker.queue_size == 0
+        if worker._use_redis:
+            assert await worker.get_queue_size() == 0
+        else:
+            assert worker.queue_size == 0
 
         # Worker should still be running
         assert worker.is_running

@@ -28,7 +28,7 @@ This project provides a robust MCP server that:
 - ✅ CI/CD pipeline with GitHub Actions
 
 ### Optional/Future Features
-- 🔜 Redis-backed queue for high-throughput scenarios
+- ✅ Redis-backed queue for high-throughput scenarios (use with `--profile async`)
 - 🔜 Example stdio client script (see Task 150)
 - 🔜 Prometheus metrics integration
 
@@ -96,6 +96,34 @@ python examples/stdio_client.py --event file.save --path /repo/file.py --auth to
 | `ASYNC_PROCESSING` | false | Enable async processing mode |
 | `MAPPING_FILE` | /app/config/mapping.yml | Path to event mapping configuration |
 | `LOG_LEVEL` | INFO | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
+| `REDIS_URL` | (empty) | Redis connection URL (e.g., redis://redis:6379/0); empty uses in-memory queue |
+
+### Using Redis-Backed Async Queue
+
+For higher throughput scenarios, you can enable a Redis-backed queue instead of the in-memory queue:
+
+1. Start the services with the async profile:
+```bash
+docker-compose --profile async up --build
+```
+
+2. Set the `REDIS_URL` environment variable in your `.env` file:
+```bash
+REDIS_URL=redis://redis:6379/0
+ASYNC_PROCESSING=true
+```
+
+3. The server will automatically use Redis for task queuing when:
+   - `REDIS_URL` is configured and non-empty
+   - The `aioredis` package is installed (included in `[redis]` optional dependency)
+
+**Benefits of Redis Queue:**
+- Persistent queue that survives container restarts
+- Multiple worker processes can share the same queue
+- Better for high-throughput scenarios
+- Tasks are stored in a Redis list and processed by worker coroutines
+
+**Note:** When Redis is unavailable, the server will fall back to the in-memory queue automatically and log a warning.
 
 ### Event Mapping Configuration
 
@@ -164,6 +192,13 @@ Events are sent as JSON envelopes:
                                      │
                                      ▼
                               ┌──────────────┐
+                              │ Async Worker │
+                              │ (in-memory   │
+                              │  or Redis)   │
+                              └──────────────┘
+                                     │
+                                     ▼
+                              ┌──────────────┐
                               │ MCP Tools    │
                               │ (ack_event,  │
                               │  process_    │
@@ -213,9 +248,13 @@ python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
-2. Install dependencies:
+### 2. Install dependencies:
 ```bash
+# For basic development
 pip install -e ".[dev]"
+
+# For Redis queue support (optional)
+pip install -e ".[dev,redis]"
 ```
 
 3. Run tests:
@@ -352,13 +391,14 @@ MIT License - see LICENSE file for details
 
 See [Planning.md](Planning.md) for detailed project planning and [Task.md](Task.md) for task tracking.
 
-### Upcoming Features
+## Upcoming Features
 - [ ] Enhanced admin tooling
 - [ ] Per-client token management
 - [ ] Multi-tenant support
 - [ ] Kubernetes manifests / Helm chart
 - [ ] OAuth or HMAC signing flows
 - [ ] Prometheus metrics integration
+- [ ] Example stdio client script
 
 ## Support
 

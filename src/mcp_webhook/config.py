@@ -61,6 +61,12 @@ class Settings(BaseSettings):
         description="Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)",
     )
 
+    # Redis Configuration
+    redis_url: str = Field(
+        default="",
+        description="Redis connection URL (e.g., redis://localhost:6379/0); empty disables Redis queue",
+    )
+
     @field_validator("log_level")
     @classmethod
     def validate_log_level(cls, v: str) -> str:
@@ -92,6 +98,14 @@ class Settings(BaseSettings):
         Returns True if at least one bearer token is configured.
         """
         return len(self.bearer_tokens_list) > 0
+
+    @property
+    def redis_enabled(self) -> bool:
+        """Check if Redis queue is enabled.
+
+        Returns True if redis_url is configured and non-empty.
+        """
+        return bool(self.redis_url.strip())
 
 
 # Global settings instance
