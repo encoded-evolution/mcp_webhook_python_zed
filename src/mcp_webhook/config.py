@@ -211,7 +211,8 @@ def configure_logging(settings: Settings) -> logging.Logger:
     root_logger.handlers.clear()
 
     # Create console handler with JSON formatter
-    handler = logging.StreamHandler(sys.stdout)
+    # IMPORTANT: Use stderr for logging to avoid interfering with MCP protocol on stdout
+    handler = logging.StreamHandler(sys.stderr)
     handler.setLevel(log_level)
     handler.setFormatter(JSONFormatter())
     root_logger.addHandler(handler)
