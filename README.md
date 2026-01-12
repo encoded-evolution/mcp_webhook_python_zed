@@ -215,6 +215,8 @@ Add to your VS Code settings (`settings.json`):
 
 ### Zed Configuration
 
+Configure Zed by adding to your `settings.json`:
+
 **Option 1: Using docker compose (recommended - server already running)**
 
 First, start the server:
@@ -227,15 +229,9 @@ Then configure Zed (open settings.json):
 
 ```json
 {
-  "lsp": {
-    "mcp": {
-      "mcp-webhook": {
-        "transport": {
-          "type": "tcp",
-          "host": "localhost",
-          "port": 9000
-        }
-      }
+  "context_servers": {
+    "mcp-webhook": {
+      "url": "tcp://localhost:9000"
     }
   }
 }
@@ -247,22 +243,23 @@ Configure Zed (open settings.json):
 
 ```json
 {
-  "lsp": {
-    "mcp": {
-      "mcp-webhook": {
-        "command": "docker",
-        "args": [
-          "run", "--rm", "-i",
-          "-p", "9000:9000",
-          "encoded-evolution/mcp-webhook-stdio:latest"
-        ]
-      }
+  "context_servers": {
+    "mcp-webhook": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "-p", "9000:9000",
+        "encoded-evolution/mcp-webhook-stdio:latest"
+      ],
+      "env": {}
     }
   }
 }
 ```
 
 **Important:** Do not use Option 2 if you already have `docker compose up` running, as it will cause a port conflict on 9000.
+
+**Note:** When using `"url"` for remote connections, do not include a `"command"` field. The `"command"` field is only for starting local processes via STDIO transport.
 
 ### TCP Transport (For Other Clients)
 
