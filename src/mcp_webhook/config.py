@@ -4,6 +4,11 @@ This module uses Pydantic BaseSettings to load configuration from environment
 variables and provide type-safe access to settings throughout the application.
 """
 
+import json
+import sys
+import logging
+from typing import Any, Dict
+
 from typing import List, Optional
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -133,3 +138,86 @@ def reset_settings() -> None:
     """
     global _settings
     _settings = None
+
+
+class JSONFormatter(logging.Formatter):
+    """Custom JSON formatter for structured logging.
+
+    This formatter creates JSON output with fields including:
+    - timestamp, level, logger, message
+    - module, function, line
+    - exception (if present)
+    - extra (all non-standard LogRecord attributes)
+    """
+
+    # Standard LogRecord attributes that should not be in the extra dict
+    _STANDARD_ATTRS = frozenset({
+        'name', 'msg', 'args', 'asctime', 'created', 'filename', 'funcName',
+        'levelname', 'levelno', 'lineno', 'module', 'msecs', 'message',
+        'pathname', 'process', 'processName', 'relativeCreated', 'thread',
+        'threadName', 'exc_info', 'exc_text', 'stack_info', 'getMessage',
+        'message'
+    })
+
+    def format(self, record: logging.LogRecord) -> str:
+        """Format log record as JSON."""
+        log_obj = {
+            "timestamp": self.formatTime(record, "%Y-%m-%dT%H:%M:%SZ"),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+            "module": record.module,
+            "function": record.funcName,
+            "line": record.lineno,
+        }
+
+        # Add exception info if present
+        if record.exc_info:
+            log_obj["exception"] = self.formatException(record.exc_info)
+
+        # Collect extra fields (non-standard attributes)
+        extra_fields: Dict[str, Any] = {}
+        for key, value in record.__dict__.items():
+            if key not in self._STANDARD_ATTRS and not key.startswith('_'):
+                extra_fields[key] = value
+
+        if extra_fields:
+            log_obj["extra"] = extra_fields
+
+        return json.dumps(log_obj)
+
+
+def configure_logging(settings: Settings) -> logging.Logger:
+    """Configure structured JSON logging for the application.
+
+    This function sets up the root logger with a JSON formatter
+    that outputs structured logs to stdout/stderr.
+
+    Args:
+        settings: The application settings instance containing log_level
+
+    Returns:
+        A logger instance configured for the "mcp_webhook" module
+    """
+
+    # Get the log level from settings
+    log_level = getattr(logging, settings.log_level)
+
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(log_level)
+
+    # Remove any existing handlers
+    root_logger.handlers.clear()
+
+    # Create console handler with JSON formatter
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(log_level)
+    handler.setFormatter(JSONFormatter())
+    root_logger.addHandler(handler)
+
+    # Create and return logger for our module
+    logger = logging.getLogger("mcp_webhook")
+    logger.setLevel(log_level)
+
+    return logger

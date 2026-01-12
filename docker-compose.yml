@@ -10,17 +10,17 @@ services:
 
         # Environment variables - will be loaded from .env
         environment:
-            - PORT=${PORT:-9000}
-            - MCP_NAME=${MCP_NAME:-MCP-STDIO-Server}
-            - WEBHOOK_BEARER_TOKENS=${WEBHOOK_BEARER_TOKENS:-}
-            - ASYNC_PROCESSING=${ASYNC_PROCESSING:-false}
-            - MAPPING_FILE=/app/config/mapping.yml
-            - LOG_LEVEL=${LOG_LEVEL:-INFO}
-            - REDIS_URL=${REDIS_URL:-}
+            - PORT: ${PORT:-9000}
+            - MCP_NAME: ${MCP_NAME:-MCP-STDIO-Server}
+            - WEBHOOK_BEARER_TOKENS: ${WEBHOOK_BEARER_TOKENS:-}
+            - ASYNC_PROCESSING: ${ASYNC_PROCESSING:-false}
+            - MAPPING_FILE: /app/config/mapping.yml
+            - LOG_LEVEL: ${LOG_LEVEL:-INFO}
+            - REDIS_URL: ${REDIS_URL:-}
 
         # Port mapping for stdio-proxy
         ports:
-            - "${PORT:-9000}:${PORT:-9000}"
+            - "${PORT:-9000}:9000"
 
         # Mount config directory
         volumes:

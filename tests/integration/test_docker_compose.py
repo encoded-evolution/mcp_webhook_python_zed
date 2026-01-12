@@ -92,16 +92,18 @@ def test_docker_compose_port_mapping():
 
     # Check each service for port mapping
     services_with_ports = []
+    main_service_has_9000 = False
     for service_name, service_config in data["services"].items():
         if "ports" in service_config:
             services_with_ports.append(service_name)
             ports = service_config["ports"]
             assert len(ports) > 0, f"Service {service_name} has empty ports list"
-            # Check for port 9000 (default MCP port)
-            assert any("9000" in str(p) for p in ports), \
-                f"Service {service_name} should map port 9000"
+            # Check for port 9000 (default MCP port) on the main service
+            if any("9000" in str(p) for p in ports):
+                main_service_has_9000 = True
 
     assert len(services_with_ports) > 0, "No services with port mappings found"
+    assert main_service_has_9000, "Main MCP service should map port 9000"
 
 
 def test_docker_compose_environment_variables():

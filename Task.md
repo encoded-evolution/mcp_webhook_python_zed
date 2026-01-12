@@ -209,7 +209,7 @@ This file lists compact, self-contained tasks to complete the plan in Planning.m
 
 ---
 
-- [ ] Task 170 — Final review and release notes
+- [x] Task 170 — Final review and release notes
   - Scope reminder: Ensure project is consistent and ready for handoff.
   - Build steps:
     1. Run full test suite and fix issues.
