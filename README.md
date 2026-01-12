@@ -92,7 +92,7 @@ This server can be used with any MCP-compatible client (Claude Desktop, VS Code 
 
 1. Pull the Docker image:
 ```bash
-docker pull your-registry/mcp-webhook-stdio:0.1.0
+docker pull encoded-evolution/mcp-webhook-stdio:0.1.0
 ```
 
 2. Create a local configuration directory:
@@ -114,7 +114,7 @@ Add the following to your Claude Desktop configuration file (`claude_desktop_con
       "args": [
         "run", "--rm", "-i",
         "-p", "9000:9000",
-        "mcp-webhook-stdio:latest"
+        "encoded-evolution/mcp-webhook-stdio:latest"
       ]
     }
   }
@@ -138,7 +138,7 @@ Add the following to your Claude Desktop configuration file (`claude_desktop_con
         "-e", "MAPPING_FILE=/app/config/mapping.yml",
         "-v", "${HOME}/.config/mcp-webhook:/app/config:ro",
         "-p", "9000:9000",
-        "mcp-webhook-stdio:latest"
+        "encoded-evolution/mcp-webhook-stdio:latest"
       ]
     }
   }
@@ -164,7 +164,7 @@ Add to your VS Code settings (`settings.json`):
           "-e", "LOG_LEVEL=INFO",
           "-v", "${env:HOME}/.config/mcp-webhook:/app/config:ro",
           "-p", "9000:9000",
-          "mcp-webhook-stdio:latest"
+          "encoded-evolution/mcp-webhook-stdio:latest"
         ]
       }
     }
