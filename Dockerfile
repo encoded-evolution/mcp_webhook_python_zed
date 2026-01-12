@@ -17,16 +17,16 @@ WORKDIR /app
 # RUN apt-get update && apt-get install -y --no-install-recommends \
 #     && rm -rf /var/lib/apt/lists/*
 
-# Copy pyproject.toml first for better Docker layer caching
+# Copy project files
 COPY pyproject.toml ./
-
-# Install Python dependencies
-# Using --no-deps and explicitly listing dependencies would be faster,
-# but pip install -e . works well for development and ensures all dependencies are installed
-RUN pip install --no-cache-dir -e ".[dev]"
-
-# Copy source code
 COPY src/ ./src/
+
+# Build wheel and install it
+# Building wheel first is more reliable than editable install in Docker
+RUN pip install --no-cache-dir build && \
+    python -m build && \
+    pip install dist/mcp_webhook_python-*.whl && \
+    rm -rf build dist
 
 # Create config directory for mapping.yml and other configs
 RUN mkdir -p /app/config

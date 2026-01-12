@@ -10,13 +10,13 @@ services:
 
         # Environment variables - will be loaded from .env
         environment:
-            - PORT: ${PORT:-9000}
-            - MCP_NAME: ${MCP_NAME:-MCP-STDIO-Server}
-            - WEBHOOK_BEARER_TOKENS: ${WEBHOOK_BEARER_TOKENS:-}
-            - ASYNC_PROCESSING: ${ASYNC_PROCESSING:-false}
-            - MAPPING_FILE: /app/config/mapping.yml
-            - LOG_LEVEL: ${LOG_LEVEL:-INFO}
-            - REDIS_URL: ${REDIS_URL:-}
+            - PORT=${PORT:-9000}
+            - MCP_NAME=${MCP_NAME:-MCP-STDIO-Server}
+            - WEBHOOK_BEARER_TOKENS=${WEBHOOK_BEARER_TOKENS:-}
+            - ASYNC_PROCESSING=${ASYNC_PROCESSING:-false}
+            - MAPPING_FILE=/app/config/mapping.yml
+            - LOG_LEVEL=${LOG_LEVEL:-INFO}
+            - REDIS_URL=${REDIS_URL:-}
 
         # Port mapping for stdio-proxy
         ports:
@@ -54,6 +54,8 @@ services:
     redis:
         image: redis:7-alpine
         container_name: mcp-webhook-redis
+        profiles:
+            - async
         restart: unless-stopped
         ports:
             - "6379:6379"
@@ -62,11 +64,5 @@ services:
             interval: 10s
             timeout: 5s
             retries: 3
-
-# Profiles for optional services
-profiles:
-    async:
-        services:
-            - redis
 
 # NOTE: To use Redis-backed async queue, run: docker-compose --profile async up
