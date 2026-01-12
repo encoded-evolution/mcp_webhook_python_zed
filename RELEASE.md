@@ -143,12 +143,12 @@ docker push ghcr.io/your-username/mcp-webhook-stdio:latest
 
 ```bash
 # Tag for private registry
-docker tag mcp-webhook-stdio:0.1.0 your-registry.com/mcp-webhook-stdio:0.1.0
-docker tag mcp-webhook-stdio:0.1.0 your-registry.com/mcp-webhook-stdio:latest
+docker tag mcp-webhook-stdio:0.1.0 encoded-evolution.com/mcp-webhook-stdio:0.1.0
+docker tag mcp-webhook-stdio:0.1.0 encoded-evolution.com/mcp-webhook-stdio:latest
 
 # Push to private registry
-docker push your-registry.com/mcp-webhook-stdio:0.1.0
-docker push your-registry.com/mcp-webhook-stdio:latest
+docker push encoded-evolution.com/mcp-webhook-stdio:0.1.0
+docker push encoded-evolution.com/mcp-webhook-stdio:latest
 ```
 
 ---
@@ -192,10 +192,10 @@ Then review and publish the draft through the GitHub web interface.
 
 ```bash
 # Pull the image
-docker pull your-registry/mcp-webhook-stdio:0.1.0
+docker pull encoded-evolution/mcp-webhook-stdio:0.1.0
 
 # Run with default configuration
-docker run -p 9000:9000 your-registry/mcp-webhook-stdio:0.1.0
+docker run -p 9000:9000 encoded-evolution/mcp-webhook-stdio:0.1.0
 ```
 
 ### With Custom Configuration
@@ -211,7 +211,7 @@ LOG_LEVEL=DEBUG
 EOF
 
 # Run with custom configuration
-docker run --env-file .env -p 9000:9000 your-registry/mcp-webhook-stdio:0.1.0
+docker run --env-file .env -p 9000:9000 encoded-evolution/mcp-webhook-stdio:0.1.0
 ```
 
 ### With Docker Compose
@@ -222,7 +222,7 @@ cat > docker-compose.override.yml << EOF
 version: "3.9"
 services:
   mcp-stdio:
-    image: your-registry/mcp-webhook-stdio:0.1.0
+    image: encoded-evolution/mcp-webhook-stdio:0.1.0
     build: .  # Comment this out to use remote image
 EOF
 

@@ -1,0 +1,66 @@
+# Example mapping configuration for MCP Webhook Server
+#
+# This file defines how incoming event envelopes are mapped to MCP tools.
+# Each mapping entry specifies:
+# - event: The event type to match (e.g., "file.save", "file.open")
+# - tool: The name of the MCP tool to invoke
+# - args: Dictionary mapping tool argument names to dot-path templates in the envelope payload
+#
+# Dot-path syntax:
+# - Use dots to navigate nested JSON structures
+# - Example: "payload.user.id" extracts the "id" field from the "user" object in "payload"
+#
+# The server reads this configuration from the path specified in MAPPING_FILE environment variable.
+
+mappings:
+  # Example 1: File save event - processes file payload with user context
+  - event: "file.save"
+    tool: "process_payload"
+    args:
+      path: payload.path
+      user_id: payload.user.id
+      timestamp: meta.timestamp
+
+  # Example 2: File open event - acknowledges file access
+  - event: "file.open"
+    tool: "ack_event"
+    args:
+      event_type: event_type
+      file: payload.path
+      user: payload.user.name
+
+  # Example 3: Git push event - processes repository updates
+  - event: "git.push"
+    tool: "process_payload"
+    args:
+      repo: payload.repository.name
+      branch: payload.ref
+      committer: payload.pusher.name
+      commit_count: payload.commits.length
+
+  # Example 4: User authentication event - logs auth attempts
+  - event: "auth.login"
+    tool: "ack_event"
+    args:
+      user_id: payload.user.id
+      method: payload.auth.method
+      success: payload.auth.success
+
+  # Example 5: Error notification event - processes error details
+  - event: "error.reported"
+    tool: "process_payload"
+    args:
+      error_code: payload.error.code
+      error_message: payload.error.message
+      context: payload.context
+      severity: meta.severity
+
+  # Example 6: Message received event - processes incoming messages
+  - event: "message.received"
+    tool: "process_payload"
+    args:
+      message_id: meta.id
+      content: payload.content
+      sender_id: payload.sender.id
+      channel_id: payload.channel.id
+      timestamp: meta.timestamp

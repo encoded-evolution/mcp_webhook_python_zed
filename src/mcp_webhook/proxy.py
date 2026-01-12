@@ -45,13 +45,15 @@ class StdioProxy:
         self.shutdown_event = asyncio.Event()
         self._logger = logger
 
-    async def forward(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter, name: str) -> None:
+    async def forward(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter, name: str, close_writer: bool = True) -> None:
         """Forward bytes from reader to writer.
 
         Args:
             reader: Source stream to read from
             writer: Destination stream to write to
             name: Descriptive name for logging
+            close_writer: Whether to close the writer on EOF/disconnect. Defaults to True.
+                          Set to False for server stdin to keep process alive.
         """
         try:
             while not self.shutdown_event.is_set():
@@ -69,11 +71,13 @@ class StdioProxy:
         except Exception as e:
             self._logger.error(f"{name}: Error forwarding data: {e}", exc_info=True)
         finally:
-            try:
-                writer.close()
-                await writer.wait_closed()
-            except Exception as e:
-                self._logger.error(f"{name}: Error closing writer: {e}")
+            # Only close writer if requested (not for server stdin)
+            if close_writer:
+                try:
+                    writer.close()
+                    await writer.wait_closed()
+                except Exception as e:
+                    self._logger.error(f"{name}: Error closing writer: {e}")
 
     async def handle_client(self, client_reader: asyncio.StreamReader, client_writer: asyncio.StreamWriter) -> None:
         """Handle a single TCP client connection.
@@ -82,6 +86,7 @@ class StdioProxy:
         - Ensures server process is running
         - Sets up bidirectional forwarding between client and server
         - Handles connection closure and cleanup
+        - Does NOT close server stdin to keep process alive for other clients
 
         Args:
             client_reader: Stream reader for TCP client
@@ -109,14 +114,14 @@ class StdioProxy:
                 return
 
             # Set up bidirectional forwarding
-            # Client -> Server stdin
+            # Client -> Server stdin (IMPORTANT: close_writer=False to keep server alive!)
             client_to_server = asyncio.create_task(
-                self.forward(client_reader, self.server_process.stdin, f"{client_addr}->server"),
+                self.forward(client_reader, self.server_process.stdin, f"{client_addr}->server", close_writer=False),
             )
 
-            # Server stdout -> Client
+            # Server stdout -> Client (close_writer=True to close client connection)
             server_to_client = asyncio.create_task(
-                self.forward(self.server_process.stdout, client_writer, f"server->{client_addr}"),
+                self.forward(self.server_process.stdout, client_writer, f"server->{client_addr}", close_writer=True),
             )
 
             # Wait for either direction to complete
@@ -236,8 +241,12 @@ class StdioProxy:
             self._logger.info("Signal handlers not available on this platform")
 
         # Serve until shutdown
-        async with self.server:
-            await self.server.serve_forever()
+        try:
+            async with self.server:
+                await self.server.serve_forever()
+        except asyncio.CancelledError:
+            self._logger.info("Server serving cancelled")
+            # Clean shutdown will happen in the finally block of run()
 
     async def shutdown(self, signal: Optional[signal.Signals] = None) -> None:
         """Gracefully shutdown the proxy and server process.
@@ -255,6 +264,16 @@ class StdioProxy:
             self.server.close()
             await self.server.wait_closed()
             self._logger.info("Proxy server closed")
+
+        # Close server stdin to signal process to exit gracefully
+        # This is safe because we're shutting down anyway
+        if self.server_process and self.server_process.stdin and not self.server_process.stdin.is_closing():
+            self._logger.debug("Closing server process stdin...")
+            self.server_process.stdin.close()
+            try:
+                await self.server_process.stdin.wait_closed()
+            except Exception:
+                pass
 
         # Terminate server process
         if self.server_process and self.server_process.returncode is None:
