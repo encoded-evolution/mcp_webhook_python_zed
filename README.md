@@ -84,6 +84,162 @@ python examples/stdio_client.py --event file.save --path /repo/file.py --auth to
 
 **Note**: The netcat test is for basic TCP connectivity only. Full MCP stdio framing is required for production usage. See `examples/stdio_client.py` for a complete client implementation.
 
+## MCP Client Configuration
+
+This server can be used with any MCP-compatible client (Claude Desktop, VS Code MCP extension, etc.) by configuring the client to connect via Docker.
+
+### Prerequisites
+
+1. Pull the Docker image:
+```bash
+docker pull your-registry/mcp-webhook-stdio:0.1.0
+```
+
+2. Create a local configuration directory:
+```bash
+mkdir -p ~/.config/mcp-webhook
+cp config/mapping.yml.example ~/.config/mcp-webhook/mapping.yml
+```
+
+### Claude Desktop Configuration
+
+Add the following to your Claude Desktop configuration file (`claude_desktop_config.json`):
+
+**Minimal configuration (no auth, default settings):**
+```json
+{
+  "mcpServers": {
+    "mcp-webhook": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "-p", "9000:9000",
+        "your-registry/mcp-webhook-stdio:0.1.0"
+      ]
+    }
+  }
+}
+```
+
+**Full configuration with all settings:**
+```json
+{
+  "mcpServers": {
+    "mcp-webhook": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "-e", "PORT=9000",
+        "-e", "MCP_NAME=My-Webhook-Server",
+        "-e", "WEBHOOK_BEARER_TOKENS=your-secret-token-1,another-token-2",
+        "-e", "ASYNC_PROCESSING=false",
+        "-e", "LOG_LEVEL=INFO",
+        "-e", "REDIS_URL=",
+        "-e", "MAPPING_FILE=/app/config/mapping.yml",
+        "-v", "${HOME}/.config/mcp-webhook:/app/config:ro",
+        "-p", "9000:9000",
+        "your-registry/mcp-webhook-stdio:0.1.0"
+      ]
+    }
+  }
+}
+```
+
+### VS Code MCP Extension Configuration
+
+Add to your VS Code settings (`settings.json`):
+
+```json
+{
+  "mcp.servers": {
+    "mcp-webhook": {
+      "transport": {
+        "type": "stdio",
+        "command": "docker",
+        "args": [
+          "run", "--rm", "-i",
+          "-e", "PORT=9000",
+          "-e", "WEBHOOK_BEARER_TOKENS=${WEBHOOK_BEARER_TOKENS}",
+          "-e", "ASYNC_PROCESSING=false",
+          "-e", "LOG_LEVEL=INFO",
+          "-v", "${env:HOME}/.config/mcp-webhook:/app/config:ro",
+          "-p", "9000:9000",
+          "your-registry/mcp-webhook-stdio:0.1.0"
+        ]
+      }
+    }
+  }
+}
+```
+
+### TCP Transport (If Client Supports It)
+
+If your MCP client supports direct TCP connections (not just STDIO), you can connect directly to the TCP proxy:
+
+```json
+{
+  "mcpServers": {
+    "mcp-webhook-tcp": {
+      "transport": {
+        "type": "tcp",
+        "host": "localhost",
+        "port": 9000,
+        "headers": {
+          "Authorization": "Bearer your-secret-token-1"
+        }
+      }
+    }
+  }
+}
+```
+
+### Environment Variables for Client Configuration
+
+| Variable | Purpose | Default | Example |
+|----------|---------|---------|---------|
+| `PORT` | Port for stdio-proxy listener | `9000` | `9000` |
+| `MCP_NAME` | Human-readable server name | `MCP-STDIO-Server` | `My-Webhook-Server` |
+| `WEBHOOK_BEARER_TOKENS` | Comma-separated auth tokens (empty = no auth) | `` (disabled) | `token1,token2,token3` |
+| `ASYNC_PROCESSING` | Enable async worker pool | `false` | `true` |
+| `LOG_LEVEL` | Logging verbosity | `INFO` | `DEBUG`, `WARNING`, `ERROR` |
+| `REDIS_URL` | Redis connection URL for async queue (optional) | `` (disabled) | `redis://localhost:6379/0` |
+| `MAPPING_FILE` | Path to event mapping config | `/app/config/mapping.yml` | `/app/config/custom-mapping.yml` |
+
+### Testing the Connection
+
+After configuring your MCP client:
+
+1. Verify the container is running:
+```bash
+docker ps | grep mcp-webhook
+```
+
+2. Check logs for startup:
+```bash
+docker logs $(docker ps -q -f ancestor=mcp-webhook-stdio)
+```
+
+3. Test TCP connection (optional):
+```bash
+nc -zv localhost 9000
+```
+
+4. Restart your MCP client to load the new configuration
+
+### Common Issues
+
+**Container not starting:** Check Docker is running and the image is pulled correctly.
+
+**Port already in use:** Change the port in your client configuration:
+```json
+"-e", "PORT=9001",
+"-p", "9001:9001",
+```
+
+**Authentication errors:** Ensure the token in your envelope matches one of the configured `WEBHOOK_BEARER_TOKENS`.
+
+**Configuration file not found:** Verify the volume mount path matches where your mapping file is located on the host.
+
 ## Configuration
 
 ### Environment Variables
