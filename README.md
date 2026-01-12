@@ -42,7 +42,7 @@ This project provides a robust MCP server that:
 
 1. Clone the repository:
 ```bash
-git clone [<repository-url>](https://github.com/encoded-evolution/mcp_webhook_python_zed.git)
+git clone https://github.com/encoded-evolution/mcp_webhook_python_zed.git
 cd mcp_webhook_python_zed
 ```
 
