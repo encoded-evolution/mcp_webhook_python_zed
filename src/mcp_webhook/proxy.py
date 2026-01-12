@@ -38,7 +38,7 @@ class StdioProxy:
     """
 
     def __init__(self) -> None:
-        """Initialize the proxy with configuration."""
+        """Initialize proxy with configuration."""
         self.settings = get_settings()
         self.server: Optional[asyncio.Server] = None
         self.server_process: Optional[asyncio.subprocess.Process] = None
@@ -101,6 +101,13 @@ class StdioProxy:
                 await client_writer.wait_closed()
                 return
 
+            # Check if stdin is still available
+            if self.server_process.stdin is None or self.server_process.stdin.is_closing():
+                self._logger.error("Server process stdin is closed, cannot communicate")
+                client_writer.close()
+                await client_writer.wait_closed()
+                return
+
             # Set up bidirectional forwarding
             # Client -> Server stdin
             client_to_server = asyncio.create_task(
@@ -138,14 +145,19 @@ class StdioProxy:
                 pass
 
     async def start_server_process(self) -> None:
-        """Start the MCP server as a subprocess with piped STDIO.
+        """Start MCP server as a subprocess with piped STDIO.
 
-        The server is started using the configured MCP name and will
-        communicate via STDIO. Stderr is captured for logging.
+        The server is started using the Python module mcp_webhook.server
+        and will communicate via STDIO. Stderr is captured for logging.
         """
+        # Check if server process is already running
+        if self.server_process is not None and self.server_process.returncode is None:
+            self._logger.debug(f"MCP server process already running with PID: {self.server_process.pid}")
+            return
+
         self._logger.info("Starting MCP server process...")
 
-        # Build command to start the MCP server
+        # Build command to start MCP server
         cmd = ["python", "-m", "mcp_webhook.server"]
 
         try:
@@ -188,14 +200,14 @@ class StdioProxy:
         """Run the TCP proxy server.
 
         This method:
-        - Starts the MCP server subprocess
+        - Starts MCP server subprocess
         - Creates TCP listener on configured port
         - Accepts client connections and handles them
         - Handles shutdown signals
         """
         self._logger.info(f"Starting stdio-proxy on port {self.settings.port}")
 
-        # Start the MCP server process
+        # Start MCP server process
         await self.start_server_process()
 
         # Create TCP server

@@ -114,7 +114,7 @@ Add the following to your Claude Desktop configuration file (`claude_desktop_con
       "args": [
         "run", "--rm", "-i",
         "-p", "9000:9000",
-        "your-registry/mcp-webhook-stdio:0.1.0"
+        "mcp-webhook-stdio:latest"
       ]
     }
   }
@@ -138,7 +138,7 @@ Add the following to your Claude Desktop configuration file (`claude_desktop_con
         "-e", "MAPPING_FILE=/app/config/mapping.yml",
         "-v", "${HOME}/.config/mcp-webhook:/app/config:ro",
         "-p", "9000:9000",
-        "your-registry/mcp-webhook-stdio:0.1.0"
+        "mcp-webhook-stdio:latest"
       ]
     }
   }
@@ -164,7 +164,7 @@ Add to your VS Code settings (`settings.json`):
           "-e", "LOG_LEVEL=INFO",
           "-v", "${env:HOME}/.config/mcp-webhook:/app/config:ro",
           "-p", "9000:9000",
-          "your-registry/mcp-webhook-stdio:0.1.0"
+          "mcp-webhook-stdio:latest"
         ]
       }
     }
